@@ -3,6 +3,8 @@ UP = 90
 DOWN = 270
 LEFT = 180
 RIGHT = 0
+X_SIZE = 1200
+Y_SIZE = 600
 
 class Snake:
     # Creating the initial snake.
@@ -49,8 +51,17 @@ class Snake:
         for i in range(1, len(self.snake)):
             self.snake[i].setposition(self.snake_position[i - 1])
         self.steps += 1
-        if self.steps == 30: self.alive = False
 
     def grow_segment(self):
         self.snake.append(self.snake[len(self.snake) - 1].clone())
+
+    def check_wall_collision(self):
+        if abs(self.head.position()[0]) >= X_SIZE / 2 - 15 or abs(self.head.position()[1]) >= Y_SIZE / 2 - 15:
+            print("Too close to the wall.")
+            self.alive = False
+
+    def check_self_collision(self):
+        self.snake_position.pop(0)
+        if self.head.position() in self.snake_position:
+            self.alive = False
 

@@ -1,16 +1,17 @@
-from turtle import Turtle, Screen
+from turtle import Screen
 import snake
 import food
 import time
+import scoreboard
 # Done 1: Create the snake itself
 # Done 2: Make the snake movable
-# Todo 3: Make the food - Can also make the food movable, too!
-# Todo 4: Make the food collision working
-# Todo 5: Make the scoreboard
+# Done 3: Make the food - Can also make the food movable, too!
+# Done 4: Make the food collision working
+# Done 5: Make the scoreboard
 # Todo 6: End game by hitting the wall
 # Todo 7: End game by hitting the snake's tail
 # Todo 8: Detect collisions of multiple snakes (2 for convenience)
-# Todo 9: Introduce leveling of game speed
+# Done 9: Introduce leveling of game speed
 # Todo 10: Make the snake a series of turtles following the leader. Not food but other turtles which join the cause.
 # Todo 10.1: It is also possible that extra turtles need to be combined in color, especially good for multiplayer.
 # Todo 11: In Multiplayer game, it is useful to collect joint score - and maybe record the joint result.
@@ -44,6 +45,7 @@ screen.listen()
 
 game_continues = True
 dinner = food.Food()
+score_counter = scoreboard.Scoreboard()
 
 while game_continues:
     if not dinner.isvisible():
@@ -55,7 +57,20 @@ while game_continues:
     if viper.head.distance(dinner) < 15:
         dinner.hideturtle()
         viper.grow_segment()
+        score_counter.score += 1
+        score_counter.clear()
+        score_counter.display_score(score_counter.score, viper.steps)
+    if dinner.position() not in viper.snake_position:
+        dinner.move()
     screen.update()
-    time.sleep(0.2 * (1 - len(viper.snake)/1800))
+    time.sleep(0.2 * abs(1 - len(viper.snake)/360) + 0.025)
+    # This allows speed to grow up to the point when the snake reaches 360 segments which is 20% of the field.
+    # If the player manages to overcome this, they will be rewarded with an increasing speed since then.
+    viper.check_wall_collision()
+    viper.check_self_collision()
+    if not viper.alive:
+        game_continues = False
+
+score_counter.display_final_score(score=score_counter.score, steps=viper.steps)
 
 screen.exitonclick()
