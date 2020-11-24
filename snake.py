@@ -57,11 +57,11 @@ class Snake:
 
     def check_wall_collision(self):
         if abs(self.head.position()[0]) >= X_SIZE / 2 - 15 or abs(self.head.position()[1]) >= Y_SIZE / 2 - 15:
-            print("Too close to the wall.")
             self.alive = False
 
     def check_self_collision(self):
-        self.snake_position.pop(0)
-        if self.head.position() in self.snake_position:
-            self.alive = False
+        if self.alive:
+            self.snake_position.pop(0)
+            if self.head.position() in self.snake_position:
+                self.alive = False
 

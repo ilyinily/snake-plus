@@ -27,13 +27,13 @@ screen.title("Game 5, The Snake")
 # Disabling the screen tracer so that the animation is displayed once a frame is fully calculated.
 screen.tracer(0)
 
-viper = snake.Snake(color="white")
-# serpent = snake.Snake(color="blue")
+viper = snake.Snake(color="white",initial_direction=0)
+serpent = snake.Snake(color="blue", initial_direction=180)
 
-# screen.onkey(key="w", fun=serpent.turn_up)
-# screen.onkey(key="d", fun=serpent.turn_right)
-# screen.onkey(key="a", fun=serpent.turn_left)
-# screen.onkey(key="s", fun=serpent.turn_down)
+screen.onkey(key="w", fun=serpent.turn_up)
+screen.onkey(key="d", fun=serpent.turn_right)
+screen.onkey(key="a", fun=serpent.turn_left)
+screen.onkey(key="s", fun=serpent.turn_down)
 
 screen.onkey(key="Up", fun=viper.turn_up)
 screen.onkey(key="Right", fun=viper.turn_right)
@@ -45,32 +45,53 @@ screen.listen()
 
 game_continues = True
 dinner = food.Food()
-score_counter = scoreboard.Scoreboard()
+viper_score = scoreboard.Scoreboard(alignment="right")
+serpent_score = scoreboard.Scoreboard(alignment="left")
 
 while game_continues:
     if not dinner.isvisible():
-        while viper.head.distance(dinner) < 15:
+        while viper.head.distance(dinner) < 15 or serpent.head.distance(dinner) < 15:
             dinner.change_location()
         dinner.showturtle()
-    viper.move_forward()
-    # serpent.move_forward()
+    if viper.alive:
+        viper.move_forward()
+    if serpent.alive:
+        serpent.move_forward()
     if viper.head.distance(dinner) < 15:
         dinner.hideturtle()
         viper.grow_segment()
-        score_counter.score += 1
-        score_counter.clear()
-        score_counter.display_score(score_counter.score, viper.steps)
-    if dinner.position() not in viper.snake_position:
+        viper_score.score += 1
+        viper_score.clear()
+        viper_score.display_score(viper_score.score, viper.steps)
+    if serpent.head.distance(dinner) < 15:
+        dinner.hideturtle()
+        serpent.grow_segment()
+        serpent_score.score += 1
+        serpent_score.clear()
+        serpent_score.display_score(serpent_score.score, serpent.steps)
+    if dinner.position() not in viper.snake_position or dinner.position() not in serpent.snake_position:
         dinner.move()
     screen.update()
-    time.sleep(0.2 * abs(1 - len(viper.snake)/360) + 0.025)
+    time.sleep(0.2 * abs(1 - max(len(viper.snake), len(serpent.snake))/360) + 0.025)
     # This allows speed to grow up to the point when the snake reaches 360 segments which is 20% of the field.
     # If the player manages to overcome this, they will be rewarded with an increasing speed since then.
+    # if viper.head.distance(serpent.head) < 15:
+    #     game_continues = False
+    for segment in viper.snake:
+        if serpent.head.distance(segment) < 15 and serpent.steps > 3:
+            game_continues = False
+    for segment in serpent.snake:
+        if viper.head.distance(segment) < 15 and viper.steps > 3:
+            game_continues = False
     viper.check_wall_collision()
+    serpent.check_wall_collision()
     viper.check_self_collision()
-    if not viper.alive:
+    serpent.check_self_collision()
+
+    if not viper.alive and not serpent.alive:
         game_continues = False
 
-score_counter.display_final_score(score=score_counter.score, steps=viper.steps)
+viper_score.display_final_score(score=viper_score.score, steps=viper.steps)
+serpent_score.display_final_score(score=serpent_score.score, steps=serpent.steps)
 
 screen.exitonclick()
